@@ -1,0 +1,12 @@
+puppet
+
+This is the puppet module. It defines a basic installation of puppet and puppet master.
+
+To create a puppet node do
+	include puppet
+
+To create a puppetmaster server do
+	include puppet::server
+
+The files directory of this module contains some basic configuration that should work with either Ubuntu or Red Hat based systems.  
+
