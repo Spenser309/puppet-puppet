@@ -2,7 +2,6 @@
 #
 #
 #
-#
 class puppet::server {
 	case $operatingsystem {
 		ubuntu: { include puppet::server::ubuntu },
