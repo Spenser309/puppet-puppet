@@ -1,1 +1,3 @@
-include puppetmaster
+include puppet
+
+#include puppet::server

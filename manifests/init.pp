@@ -9,60 +9,66 @@
 #   Installs the puppet server or client
 #
 # Requires:
-#	none
+#   none
 # Sample Usage:
-#	include puppet
+#   include puppet
 #
 class puppet {
-	case $operatingsystem {
-		ubuntu: { include puppet::ubuntu },
-		debian: { include puppet::ubuntu },
-		RedHat: { inlcude puppet::redhat },
-		centos: { include puppet::redhat },
-		default: { include puppet::base }
-	}
+   case $operatingsystem {
+      ubuntu, debian: { include puppet::deb }
+      centos, RedHat: { include puppet::rpm }
+      default: { include puppet::base }
+   }
 }
 
 class puppet::base {
-	package {'puppet': ensure => installed }	
-
-	service {'puppet':
-		enable    => true,
-		ensure    => running,
-	}
+   # The puppet installation
+   package {'puppet':
+     ensure => present
+   }
+   
+   # The puppet service
+   service {'puppet':
+      enable  => true,
+      ensure  => running,
+      require => Package['puppet']
+   }
+   
+   # Set defaults for configuration files
+   File { 
+      owner => 'root',
+      group => 'root',
+      notify => Service['puppet'],
+      require => Package['puppet']
+      
+   }
+   
+   # The configuration files for puppet
+   file {'/etc/puppet/puppet.conf':
+         source => ['puppet:///modules/puppet/etc/puppet/puppet.conf']
+   }
+   
+   # Needed for puppet kick
+   file {
+      '/etc/puppet/namespaceauth.conf':
+         source => ['puppet:///modules/puppet/etc/puppet/namespaceauth.conf'];
+      '/etc/puppet/auth.conf':
+         source => ['puppet:///modules/puppet/etc/puppet/auth.conf'];
+   }
 	
-	file { '/etc/puppet/puppet.conf':
-		source => ['puppet:///files/etc/puppet/puppet.conf', 
-                           'puppet:///modules/puppet/etc/puppet/puppet.conf'],
-		owner => 'root',
-		group => 'root',
-		mode => '640',
-		notify => Service['puppet'],
-		require => Package['puppet'],
-	}
 }
 
-class puppet::ubuntu inherits puppet::base {
-	file { '/etc/default/puppet':
-		source  => ['puppet:///files/etc/default/puppet',
-		            'puppet:///modules/puppet/etc/default/puppet.conf'],
-		owner   => 'root',
-		group   => 'root',
-		mode    => '640',
-		notify  => Service['puppet'],
-		require => Package['puppet'],
-	}
+class puppet::deb inherits puppet::base {
+   # This file makes puppet start by default on debian systems
+   file {'/etc/default/puppet':
+      source  => ['puppet:///modules/puppet/etc/default/puppet']
+   }
 }
 
-class puppet::redhat inherits puppet::base {
-	file { '/etc/sysconfig/puppet':
-		source  => ['puppet:///files/etc/sysconfig/puppet',
-		            'puppet:///modules/puppet/etc/sysconfig/puppet'],	
-		owner   => 'root',
-		group   => 'root',
-		mode    => '0640',
-		notify  => Service['puppet'],
-		require => Package['puppet'],
-	}
+class puppet::rpm inherits puppet::base {
+   # This file makes puppet start by default on redhat systems.
+   file {'/etc/sysconfig/puppet':
+      source  => ['puppet:///modules/puppet/etc/sysconfig/puppet']
+   }
 }
 
