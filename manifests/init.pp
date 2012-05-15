@@ -13,7 +13,9 @@
 # Sample Usage:
 #   include puppet
 #
-class puppet {
+class puppet (
+	$enable = 'true',
+) {
    case $operatingsystem {
       ubuntu, debian: { include puppet::deb }
       centos, RedHat: { include puppet::rpm }
@@ -45,7 +47,8 @@ class puppet::base {
    
    # The configuration files for puppet
    file {'/etc/puppet/puppet.conf':
-         source => ['puppet:///modules/puppet/etc/puppet/puppet.conf']
+         content => template('puppet/etc/puppet/puppet.conf.common.erb',
+			                    'puppet/etc/puppet/puppet.conf.agent.erb'),
    }
    
    # Needed for puppet kick
@@ -61,7 +64,7 @@ class puppet::base {
 class puppet::deb inherits puppet::base {
    # This file makes puppet start by default on debian systems
    file {'/etc/default/puppet':
-      source  => ['puppet:///modules/puppet/etc/default/puppet']
+      content  => template("puppet/etc/default/puppet.erb"),
    }
 }
 

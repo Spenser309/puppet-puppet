@@ -1,0 +1,18 @@
+<% if webserver == 'passenger' -%>
+START=no
+<% else -%>
+START=yes
+<% end -%>
+
+DAEMON_OPTS=""
+
+<% if webserver == 'mongrel' -%>
+PUPPETMASTERS= <%= mongrel_slaves %>
+PORT=18140
+<% else -%>
+PUPPETMASTERS=1
+PORT=8140
+<% end -%>
+
+
+
